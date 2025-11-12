@@ -59,17 +59,19 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    return { isValid: Object.keys(newErrors).length === 0, errors: newErrors };
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) {
+    const validation = validate();
+    
+    if (!validation.isValid) {
       // Track validation errors
       posthog?.capture('onboarding_step2_validation_failed', {
         session_id: sessionId,
-        error_fields: Object.keys(errors),
+        error_fields: Object.keys(validation.errors),
       });
       return;
     }

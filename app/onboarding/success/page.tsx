@@ -81,6 +81,7 @@ function SuccessPageContent() {
   const searchParams = useSearchParams();
   const [insights, setInsights] = useState<LocalInsights | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [storeName, setStoreName] = useState('');
   const [hasTrackedView, setHasTrackedView] = useState(false);
 
@@ -104,6 +105,8 @@ function SuccessPageContent() {
 
     if (lat && lng) {
       setLoading(true);
+      setError(null);
+      
       fetch('/api/insights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -113,7 +116,12 @@ function SuccessPageContent() {
           storeType 
         }),
       })
-        .then((res) => res.json())
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error('Failed to fetch insights');
+          }
+          return res.json();
+        })
         .then((data) => {
           if (data.success) {
             setInsights(data.insights);
@@ -124,9 +132,20 @@ function SuccessPageContent() {
               nearby_stores: data.insights.nearby.within_5_miles,
               has_quality_data: !!data.insights.quality.avg_rating_local,
             });
+          } else {
+            throw new Error(data.error || 'Failed to load insights');
           }
         })
-        .catch(console.error)
+        .catch((err) => {
+          console.error('Insights error:', err);
+          setError(err.message || 'Unable to load market insights. Please try refreshing the page.');
+          
+          // Track insights load failure
+          posthog?.capture('onboarding_insights_load_failed', {
+            store_name: name,
+            error: err.message,
+          });
+        })
         .finally(() => setLoading(false));
     } else {
       setLoading(false);
@@ -212,7 +231,35 @@ function SuccessPageContent() {
           <div className="animate-slide-up animate-delay-300">
             <h3 className="text-2xl font-heading font-bold text-gray-900 mb-6 text-center">Your Local Market Snapshot</h3>
             
-            {loading ? (
+            {error ? (
+              <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8 text-center">
+                <div className="flex items-center justify-center w-16 h-16 bg-red-100 rounded-full mb-4 mx-auto">
+                  <svg
+                    className="w-8 h-8 text-red-600"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                    />
+                  </svg>
+                </div>
+                <h4 className="text-lg font-heading font-semibold text-red-900 mb-2">
+                  Unable to Load Insights
+                </h4>
+                <p className="text-red-700 mb-4">{error}</p>
+                <button
+                  onClick={() => window.location.reload()}
+                  className="px-6 py-2 bg-red-600 text-white font-heading font-medium rounded-lg hover:bg-red-700 transition-colors text-sm"
+                >
+                  Try Again
+                </button>
+              </div>
+            ) : loading ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {[1, 2, 3].map((i) => (
                   <div key={i} className="bg-white rounded-lg shadow-sm border border-gray-200 p-6 animate-pulse">
