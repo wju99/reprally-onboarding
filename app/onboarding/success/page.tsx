@@ -6,6 +6,22 @@ import { InsightsPanel } from '@/components/onboarding/InsightsPanel';
 import type { LocalInsights } from '@/lib/insights/queries';
 import Link from 'next/link';
 
+// Helper function to get proper ordinal suffix
+function getOrdinalSuffix(num: number): string {
+  const j = num % 10;
+  const k = num % 100;
+  if (j === 1 && k !== 11) {
+    return num + 'st';
+  }
+  if (j === 2 && k !== 12) {
+    return num + 'nd';
+  }
+  if (j === 3 && k !== 13) {
+    return num + 'rd';
+  }
+  return num + 'th';
+}
+
 export default function OnboardingSuccessPage() {
   const searchParams = useSearchParams();
   const [insights, setInsights] = useState<LocalInsights | null>(null);
@@ -51,7 +67,7 @@ export default function OnboardingSuccessPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-serif font-bold text-emerald-900">
-              Welcome to RepRally!
+              Welcome to RepRally
             </h1>
             <a
               href={process.env.NODE_ENV === 'production' ? 'https://www.reprally.com/' : 'http://localhost:3000'}
@@ -161,7 +177,7 @@ export default function OnboardingSuccessPage() {
                       {insights.quality.avg_rating_local.toFixed(1)}
                     </div>
                     <p className="text-sm text-gray-500">
-                      {insights.quality.percentile && `${insights.quality.percentile}th percentile`}
+                      {insights.quality.percentile && `${getOrdinalSuffix(insights.quality.percentile)} percentile`}
                     </p>
                   </div>
                 )}
@@ -313,7 +329,7 @@ export default function OnboardingSuccessPage() {
                       {insights.quality.percentile !== null && (
                         <div className="mt-4 pt-4 border-t text-center">
                           <div className="text-3xl font-bold text-emerald-600">
-                            {insights.quality.percentile}th
+                            {getOrdinalSuffix(insights.quality.percentile)}
                           </div>
                           <div className="text-xs text-gray-500">percentile statewide</div>
                         </div>

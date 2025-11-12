@@ -30,9 +30,4 @@ Notes
 
 - Google Places will be used for address autocomplete and to persist place_id + coordinates.
 - Insights will query Supabase `public.nj_stores` using coordinates; null-safe computations.
-- PostGIS indexing can be added later for faster geospatial queries.
-
-License
-
-MIT
 
