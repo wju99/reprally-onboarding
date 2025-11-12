@@ -24,12 +24,13 @@ interface Step1FormProps {
 }
 
 const STORE_TYPES = [
-  'convenience',
-  'grocery',
-  'foodservice',
-  'liquor',
-  'gas',
-  'other',
+  { value: 'convenience', label: 'Convenience' },
+  { value: 'grocery', label: 'Grocery' },
+  { value: 'foodservice', label: 'Food Service' },
+  { value: 'liquor', label: 'Liquor' },
+  { value: 'gas', label: 'Gas Station' },
+  { value: 'tobacco_smoke', label: 'Tobacco / Smoke' },
+  { value: 'other', label: 'Other' },
 ];
 
 export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps) {
@@ -261,8 +262,8 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
         >
           <option value="">Select a type...</option>
           {STORE_TYPES.map((type) => (
-            <option key={type} value={type}>
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+            <option key={type.value} value={type.value}>
+              {type.label}
             </option>
           ))}
         </select>
