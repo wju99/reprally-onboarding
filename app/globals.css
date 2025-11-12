@@ -73,5 +73,30 @@ body {
     animation-delay: 0.4s;
     animation-fill-mode: backwards;
   }
+
+  /* Phone Input Styling */
+  .phone-input .PhoneInputInput {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    line-height: 1.5rem;
+    outline: none;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+  }
+
+  .phone-input .PhoneInputInput:focus {
+    border-color: transparent;
+    box-shadow: 0 0 0 2px #10b981;
+  }
+
+  .phone-input-error .PhoneInputInput {
+    border-color: #ef4444;
+  }
+
+  .phone-input .PhoneInputCountry {
+    margin-right: 0.5rem;
+  }
 }
 

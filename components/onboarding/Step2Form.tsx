@@ -19,10 +19,40 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
     bestTime: '',
     contactMethod: '',
   });
+  const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+
+  const validate = () => {
+    const newErrors: Record<string, string> = {};
+
+    if (!formData.whatsSelling.trim()) {
+      newErrors.whatsSelling = 'Please tell us what\'s selling well';
+    } else if (formData.whatsSelling.trim().length < 2) {
+      newErrors.whatsSelling = 'Please provide at least 2 characters';
+    }
+
+    if (!formData.productsExcited.trim()) {
+      newErrors.productsExcited = 'Please tell us what products you\'re excited about';
+    } else if (formData.productsExcited.trim().length < 2) {
+      newErrors.productsExcited = 'Please provide at least 2 characters';
+    }
+
+    if (!formData.bestTime) {
+      newErrors.bestTime = 'Please select your preferred time';
+    }
+
+    if (!formData.contactMethod) {
+      newErrors.contactMethod = 'Please select your preferred contact method';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!validate()) return;
 
     setSubmitting(true);
     try {
@@ -57,44 +87,57 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
       {/* What's Selling */}
       <div>
         <label htmlFor="whatsSelling" className="block text-sm font-medium text-gray-700 mb-1">
-          What's selling well right now?
+          What's selling well right now? *
         </label>
         <textarea
           id="whatsSelling"
           value={formData.whatsSelling}
           onChange={(e) => setFormData({ ...formData, whatsSelling: e.target.value })}
           rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+            errors.whatsSelling ? 'border-red-500' : 'border-gray-300'
+          }`}
           placeholder="Tell us about your top products, popular categories, or seasonal items..."
+          required
+          minLength={2}
         />
+        {errors.whatsSelling && <p className="text-red-500 text-sm mt-1">{errors.whatsSelling}</p>}
       </div>
 
       {/* Products Excited About */}
       <div>
         <label htmlFor="productsExcited" className="block text-sm font-medium text-gray-700 mb-1">
-          What products are you excited to carry?
+          What products are you excited to carry? *
         </label>
         <textarea
           id="productsExcited"
           value={formData.productsExcited}
           onChange={(e) => setFormData({ ...formData, productsExcited: e.target.value })}
           rows={4}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+            errors.productsExcited ? 'border-red-500' : 'border-gray-300'
+          }`}
           placeholder="New brands you want to stock, categories you're expanding into..."
+          required
+          minLength={2}
         />
+        {errors.productsExcited && <p className="text-red-500 text-sm mt-1">{errors.productsExcited}</p>}
       </div>
 
       {/* Best Time to Reach */}
       <div>
         <label htmlFor="bestTime" className="block text-sm font-medium text-gray-700 mb-1">
-          Best time to reach you
+          Best time to reach you *
         </label>
         <select
           id="bestTime"
           value={formData.bestTime}
           onChange={(e) => setFormData({ ...formData, bestTime: e.target.value })}
-          className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className={`w-full pl-4 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+            errors.bestTime ? 'border-red-500' : 'border-gray-300'
+          }`}
           style={{ backgroundPosition: 'right 0.75rem center' }}
+          required
         >
           <option value="">Select a time...</option>
           {BEST_TIMES.map((time) => (
@@ -103,19 +146,23 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
             </option>
           ))}
         </select>
+        {errors.bestTime && <p className="text-red-500 text-sm mt-1">{errors.bestTime}</p>}
       </div>
 
       {/* Preferred Contact Method */}
       <div>
         <label htmlFor="contactMethod" className="block text-sm font-medium text-gray-700 mb-1">
-          Preferred contact method
+          Preferred contact method *
         </label>
         <select
           id="contactMethod"
           value={formData.contactMethod}
           onChange={(e) => setFormData({ ...formData, contactMethod: e.target.value })}
-          className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className={`w-full pl-4 pr-10 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+            errors.contactMethod ? 'border-red-500' : 'border-gray-300'
+          }`}
           style={{ backgroundPosition: 'right 0.75rem center' }}
+          required
         >
           <option value="">Select a method...</option>
           {CONTACT_METHODS.map((method) => (
@@ -124,6 +171,7 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
             </option>
           ))}
         </select>
+        {errors.contactMethod && <p className="text-red-500 text-sm mt-1">{errors.contactMethod}</p>}
       </div>
 
       {/* Actions */}
@@ -131,14 +179,14 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-3 border border-gray-300 text-gray-700 font-heading font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+          className="px-6 py-3 border border-gray-300 text-gray-700 font-heading font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 text-sm"
         >
           Back
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
         >
           {submitting ? 'Submitting...' : 'Complete Onboarding'}
         </button>

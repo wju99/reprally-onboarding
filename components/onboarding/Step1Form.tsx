@@ -3,6 +3,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { initAutocomplete, PlaceResult } from '@/lib/hooks/useGooglePlaces';
 import { saveOnboardingDraft } from '@/app/actions/onboarding';
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 interface Step1FormProps {
   sessionId: string;
@@ -61,19 +63,54 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
   const validate = () => {
     const newErrors: Record<string, string> = {};
 
+    // Store name validation
     if (!formData.storeName.trim()) {
       newErrors.storeName = 'Store name is required';
+    } else if (formData.storeName.trim().length < 2) {
+      newErrors.storeName = 'Store name must be at least 2 characters';
+    } else if (formData.storeName.trim().length > 100) {
+      newErrors.storeName = 'Store name must be less than 100 characters';
     }
+
+    // Address validation
     if (!formData.address.trim()) {
       newErrors.address = 'Address is required';
+    } else if (!formData.placeId) {
+      newErrors.address = 'Please select a valid address from the dropdown';
     }
+
+    // Store type validation
     if (!formData.storeType) {
       newErrors.storeType = 'Store type is required';
     }
+
+    // Hours validation
+    if (formData.hours && formData.hours.trim().length > 200) {
+      newErrors.hours = 'Hours description must be less than 200 characters';
+    }
+
+    // Email validation
     if (!formData.email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = 'Invalid email format';
+      newErrors.email = 'Please enter a valid email address';
+    } else if (formData.email.length > 100) {
+      newErrors.email = 'Email must be less than 100 characters';
+    }
+
+    // Phone validation (optional but validated if provided)
+    if (formData.phone && formData.phone.trim()) {
+      // Phone number should start with + for international format
+      if (!formData.phone.startsWith('+')) {
+        newErrors.phone = 'Please select a country code';
+      } else {
+        const phoneDigits = formData.phone.replace(/\D/g, '');
+        if (phoneDigits.length < 10) {
+          newErrors.phone = 'Phone number must be at least 10 digits';
+        } else if (phoneDigits.length > 15) {
+          newErrors.phone = 'Phone number is too long';
+        }
+      }
     }
 
     setErrors(newErrors);
@@ -134,6 +171,8 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
             errors.storeName ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="Joe's Corner Store"
+          maxLength={100}
+          required
         />
         {errors.storeName && <p className="text-red-500 text-sm mt-1">{errors.storeName}</p>}
       </div>
@@ -153,6 +192,7 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
             errors.address ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="Start typing your address..."
+          required
         />
         {errors.address && <p className="text-red-500 text-sm mt-1">{errors.address}</p>}
         <p className="text-xs text-gray-500 mt-1">Select from dropdown for best results</p>
@@ -172,6 +212,7 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
           className={`w-full pl-4 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3E%3Cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27m6 8 4 4 4-4%27/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat ${
             errors.storeType ? 'border-red-500' : 'border-gray-300'
           }`}
+          required
         >
           <option value="">Select a type...</option>
           {STORE_TYPES.map((type) => (
@@ -193,9 +234,13 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
           type="text"
           value={formData.hours}
           onChange={(e) => setFormData({ ...formData, hours: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className={`w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+            errors.hours ? 'border-red-500' : ''
+          }`}
           placeholder="e.g., Mon-Fri 8am-8pm, Sat-Sun 9am-6pm"
+          maxLength={200}
         />
+        {errors.hours && <p className="text-red-500 text-sm mt-1">{errors.hours}</p>}
       </div>
 
       {/* Email */}
@@ -212,6 +257,8 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
             errors.email ? 'border-red-500' : 'border-gray-300'
           }`}
           placeholder="you@example.com"
+          maxLength={100}
+          required
         />
         {errors.email && <p className="text-red-500 text-sm mt-1">{errors.email}</p>}
       </div>
@@ -221,24 +268,52 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
         <label htmlFor="phone" className="block text-sm font-medium text-gray-700 mb-1">
           Phone Number
         </label>
-        <input
-          id="phone"
-          type="tel"
+        <PhoneInput
+          international
+          defaultCountry="US"
           value={formData.phone}
-          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          onChange={(value) => setFormData({ ...formData, phone: value || '' })}
+          className={`phone-input ${errors.phone ? 'phone-input-error' : ''}`}
           placeholder="(555) 123-4567"
         />
+        {errors.phone && <p className="text-red-500 text-sm mt-1">{errors.phone}</p>}
       </div>
 
-      {/* Submit */}
-      <div className="flex justify-end pt-4">
+      {/* Actions */}
+      <div className="flex justify-between pt-4">
+        <button
+          type="button"
+          onClick={() => {
+            setFormData({
+              storeName: '',
+              address: '',
+              placeId: '',
+              lat: 0,
+              lng: 0,
+              storeType: '',
+              hours: '',
+              email: '',
+              phone: '',
+            });
+            setErrors({});
+          }}
+          className="px-6 py-3 border border-gray-300 text-gray-700 font-heading font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 text-sm"
+        >
+          Reset
+        </button>
         <button
           type="submit"
           disabled={saving}
-          className="px-6 py-3 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed text-sm flex items-center gap-2"
         >
-          {saving ? 'Saving...' : 'Continue to Step 2'}
+          {saving ? 'Saving...' : (
+            <>
+              Continue to Step 2
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+              </svg>
+            </>
+          )}
         </button>
       </div>
     </form>
