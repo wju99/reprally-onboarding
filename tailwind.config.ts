@@ -13,6 +13,10 @@ const config: Config = {
           green: "#0b3d2e",
           accent: "#0e7a66"
         }
+      },
+      fontFamily: {
+        sans: ['"Didact Gothic"', 'Arial', 'sans-serif'],
+        heading: ['var(--font-inter)', 'sans-serif'],
       }
     }
   },

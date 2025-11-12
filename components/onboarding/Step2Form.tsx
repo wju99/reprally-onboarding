@@ -131,14 +131,14 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
         <button
           type="button"
           onClick={onBack}
-          className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+          className="px-6 py-3 border border-gray-300 text-gray-700 font-heading font-medium rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
         >
           Back
         </button>
         <button
           type="submit"
           disabled={submitting}
-          className="px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {submitting ? 'Submitting...' : 'Complete Onboarding'}
         </button>

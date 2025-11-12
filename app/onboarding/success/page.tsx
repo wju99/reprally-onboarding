@@ -22,6 +22,20 @@ function getOrdinalSuffix(num: number): string {
   return num + 'th';
 }
 
+// Helper function to format store type labels
+function formatStoreType(type: string): string {
+  const formatted = type
+    .replace(/tobacco_smoke/gi, 'Tobacco / Smoke')
+    .replace(/foodservice/gi, 'Food Service');
+  
+  // Capitalize first letter if not already formatted
+  if (formatted === type) {
+    return type.charAt(0).toUpperCase() + type.slice(1).replace(/_/g, ' ');
+  }
+  
+  return formatted;
+}
+
 export default function OnboardingSuccessPage() {
   const searchParams = useSearchParams();
   const [insights, setInsights] = useState<LocalInsights | null>(null);
@@ -66,12 +80,12 @@ export default function OnboardingSuccessPage() {
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-serif font-bold text-emerald-900">
+            <h1 className="text-2xl font-heading font-bold text-emerald-900">
               Welcome to RepRally
             </h1>
             <a
               href={process.env.NODE_ENV === 'production' ? 'https://www.reprally.com/' : 'http://localhost:3000'}
-              className="px-6 py-2 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+              className="px-6 py-2 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 transition-colors"
             >
               Back to Home
             </a>
@@ -102,7 +116,7 @@ export default function OnboardingSuccessPage() {
                 </svg>
               </div>
 
-              <h2 className="text-3xl font-serif font-bold text-gray-900 text-center mb-4">
+              <h2 className="text-3xl font-heading font-bold text-gray-900 text-center mb-4">
                 You're all set{storeName ? `, ${storeName}` : ''}!
               </h2>
               
@@ -112,7 +126,7 @@ export default function OnboardingSuccessPage() {
 
               {/* Next Steps */}
               <div className="border-t pt-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4">What happens next?</h3>
+                <h3 className="text-lg font-heading font-semibold text-gray-900 mb-4">What happens next?</h3>
                 <ul className="space-y-3">
                   <li className="flex items-start">
                     <span className="flex-shrink-0 w-6 h-6 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-sm font-semibold mr-3">
@@ -145,7 +159,7 @@ export default function OnboardingSuccessPage() {
 
           {/* Insights Section - Full Width Grid */}
           <div>
-            <h3 className="text-2xl font-serif font-bold text-gray-900 mb-6 text-center">Your Local Market Snapshot</h3>
+            <h3 className="text-2xl font-heading font-bold text-gray-900 mb-6 text-center">Your Local Market Snapshot</h3>
             
             {loading ? (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -161,7 +175,7 @@ export default function OnboardingSuccessPage() {
                 {/* Nearby Competition */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                   <div className="text-3xl mb-2">📍</div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Nearby Stores</h4>
+                  <h4 className="font-heading font-semibold text-gray-900 mb-2">Nearby Stores</h4>
                   <div className="text-3xl font-bold text-emerald-600 mb-1">
                     {insights.nearby.within_3_miles}
                   </div>
@@ -172,7 +186,7 @@ export default function OnboardingSuccessPage() {
                 {insights.quality.avg_rating_local && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="text-3xl mb-2">⭐</div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Local Avg Rating</h4>
+                    <h4 className="font-heading font-semibold text-gray-900 mb-2">Local Avg Rating</h4>
                     <div className="text-3xl font-bold text-emerald-600 mb-1">
                       {insights.quality.avg_rating_local.toFixed(1)}
                     </div>
@@ -186,9 +200,9 @@ export default function OnboardingSuccessPage() {
                 {insights.composition.local_types.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="text-3xl mb-2">🏪</div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Most Common</h4>
-                    <div className="text-xl font-bold text-emerald-600 mb-1 capitalize">
-                      {insights.composition.local_types[0].type}
+                    <h4 className="font-heading font-semibold text-gray-900 mb-2">Most Common</h4>
+                    <div className="text-xl font-bold text-emerald-600 mb-1">
+                      {formatStoreType(insights.composition.local_types[0].type)}
                     </div>
                     <p className="text-sm text-gray-500">
                       {insights.composition.local_types[0].percentage}% of local stores
@@ -200,7 +214,7 @@ export default function OnboardingSuccessPage() {
                 {insights.trending.categories.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                     <div className="text-3xl mb-2">🔥</div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Trending</h4>
+                    <h4 className="font-heading font-semibold text-gray-900 mb-2">Trending</h4>
                     <div className="text-sm font-medium text-gray-700 mb-2">
                       {insights.trending.categories[0]}
                     </div>
@@ -222,13 +236,13 @@ export default function OnboardingSuccessPage() {
                 {/* Closest Stores */}
                 {insights.nearby.closest.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">📍 Closest Stores</h4>
+                    <h4 className="font-heading font-semibold text-gray-900 mb-4">📍 Closest Stores</h4>
                     <div className="space-y-3">
                       {insights.nearby.closest.slice(0, 5).map((store, idx) => (
                         <div key={idx} className="text-sm border-b border-gray-100 pb-2 last:border-0">
                           <div className="font-medium text-gray-900">{store.store_name}</div>
                           <div className="text-gray-500 text-xs">
-                            {store.store_type} • {store.distance_miles} mi
+                            {formatStoreType(store.store_type)} • {store.distance_miles} mi
                             {store.google_place_rating && ` • ⭐ ${store.google_place_rating}`}
                           </div>
                         </div>
@@ -240,12 +254,12 @@ export default function OnboardingSuccessPage() {
                 {/* Store Type Breakdown */}
                 {insights.composition.local_types.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">🏪 Local Store Mix</h4>
+                    <h4 className="font-heading font-semibold text-gray-900 mb-4">🏪 Local Store Mix</h4>
                     <div className="space-y-3">
                       {insights.composition.local_types.slice(0, 5).map((type, idx) => (
                         <div key={idx}>
                           <div className="flex justify-between mb-1 text-sm">
-                            <span className="text-gray-700 capitalize">{type.type}</span>
+                            <span className="text-gray-700">{formatStoreType(type.type)}</span>
                             <span className="text-gray-500">{type.percentage}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
@@ -263,7 +277,7 @@ export default function OnboardingSuccessPage() {
                 {/* All Trending Categories */}
                 {insights.trending.categories.length > 0 && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">🔥 Trending Locally</h4>
+                    <h4 className="font-heading font-semibold text-gray-900 mb-4">🔥 Trending Locally</h4>
                     <div className="space-y-2">
                       {insights.trending.categories.map((cat, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
@@ -294,7 +308,7 @@ export default function OnboardingSuccessPage() {
                 {/* Opportunities */}
                 {insights.composition.underserved.length > 0 && (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-6">
-                    <h4 className="font-semibold text-amber-900 mb-4">💡 Opportunities</h4>
+                    <h4 className="font-heading font-semibold text-amber-900 mb-4">💡 Opportunities</h4>
                     <p className="text-sm text-amber-800 mb-3">
                       These categories are underrepresented in your area:
                     </p>
@@ -302,7 +316,7 @@ export default function OnboardingSuccessPage() {
                       {insights.composition.underserved.map((type, idx) => (
                         <div key={idx} className="flex items-center gap-2 text-sm">
                           <span className="w-2 h-2 bg-amber-500 rounded-full"></span>
-                          <span className="text-amber-900 capitalize font-medium">{type}</span>
+                          <span className="text-amber-900 font-medium">{formatStoreType(type)}</span>
                         </div>
                       ))}
                     </div>
@@ -312,7 +326,7 @@ export default function OnboardingSuccessPage() {
                 {/* Quality Comparison */}
                 {insights.quality.avg_rating_local && insights.quality.avg_rating_statewide && (
                   <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                    <h4 className="font-semibold text-gray-900 mb-4">⭐ Quality Benchmark</h4>
+                    <h4 className="font-heading font-semibold text-gray-900 mb-4">⭐ Quality Benchmark</h4>
                     <div className="space-y-3">
                       <div className="flex justify-between items-center">
                         <span className="text-sm text-gray-600">Local avg:</span>

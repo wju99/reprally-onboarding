@@ -236,7 +236,7 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
         <button
           type="submit"
           disabled={saving}
-          className="px-6 py-3 bg-emerald-600 text-white font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="px-6 py-3 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {saving ? 'Saving...' : 'Continue to Step 2'}
         </button>
