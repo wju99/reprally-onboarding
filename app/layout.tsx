@@ -10,7 +10,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Store Onboarding",
+  title: "RepRally - Onboarding",
   description: "Onboarding flow with instant local insights"
 };
 
