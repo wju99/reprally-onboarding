@@ -2,7 +2,7 @@
 
 A simple onboarding form for store owners that shows them local market data. Built with Next.js, React, TypeScript, Supabase, and PostHog analytics.
 
-## What This Does
+## Summary
 
 Store owners fill out a 2-step form about their business. When they're done, they see insights about their local market:
 - How many competitors are nearby
@@ -40,14 +40,14 @@ Store owners fill out a 2-step form about their business. When they're done, the
 
 ## Analytics
 
-### Events I Track
+### Events
 
 I track 12 different actions users take:
 
 **Main Flow:**
 - User lands on Step 1
 - User selects an address from autocomplete
-- User tries to submit Step 1 but has errors (I track which fields failed)
+- User tries to submit Step 1 but has errors (track which fields failed)
 - User completes Step 1
 - User lands on Step 2
 - User tries to submit Step 2 but has errors
@@ -197,21 +197,11 @@ If insights take more than 2 seconds to load:
 
 ### Long-term Success Metrics
 
-- **Do they buy?** Track how many people who complete onboarding become active, successful customers
-- **How fast do they get value?** Measure time from signup to seeing results
+- **Do they buy?** Track conversion from onboarding to paying customer
 - **Do they come back?** See if users return to check updated insights
-- **Does sales team close them?** Track conversion from onboarding to paying customer
-- **Is the data good?** Check how many submissions are complete and accurate
+- **Is the data accurate?** Check how many submissions are complete and accurate
 
-## Running This Locally
-
-### What You Need
-- Node.js 18 or newer
-- A Supabase account (free tier is fine)
-- A Google Maps API key
-- A PostHog account (free tier is fine)
-
-### Setup Steps
+### Local Setup Steps
 
 ```bash
 # 1. Download the code
@@ -228,24 +218,6 @@ npm install
 npm run dev
 
 # 5. Open http://localhost:3000 in your browser
-```
-
-### API Keys You Need
-
-Create a file called `.env.local` in the main folder and add:
-
-```bash
-# Supabase (database)
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
-
-# Google Maps (address autocomplete)
-NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your_google_maps_api_key
-
-# PostHog (analytics)
-NEXT_PUBLIC_POSTHOG_KEY=your_posthog_key
-NEXT_PUBLIC_POSTHOG_HOST=https://us.i.posthog.com
-```
 
 ## Folder Structure
 
