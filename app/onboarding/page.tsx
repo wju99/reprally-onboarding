@@ -1,17 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Step1Form } from '@/components/onboarding/Step1Form';
 import { Step2Form } from '@/components/onboarding/Step2Form';
-import { InsightsPanel } from '@/components/onboarding/InsightsPanel';
 import { useGooglePlaces } from '@/lib/hooks/useGooglePlaces';
-import type { LocalInsights } from '@/lib/insights/queries';
 
 export default function OnboardingPage() {
+  const router = useRouter();
   const [step, setStep] = useState(1);
   const [sessionId] = useState(() => `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`);
-  const [insights, setInsights] = useState<LocalInsights | null>(null);
-  const [loadingInsights, setLoadingInsights] = useState(false);
   
   const { isLoaded: mapsLoaded, error: mapsError } = useGooglePlaces();
 
@@ -73,58 +71,35 @@ export default function OnboardingPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Form Column */}
-          <div className="lg:col-span-2">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-              {step === 1 && (
-                <Step1Form
-                  sessionId={sessionId}
-                  initialData={step1Data}
-                  onComplete={(data) => {
-                    setStep1Data(data);
-                    setStep(2);
-                  }}
-                  onInsightsRequest={(lat, lng, storeType) => {
-                    setLoadingInsights(true);
-                    fetch('/api/insights', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ lat, lng, storeType }),
-                    })
-                      .then((res) => res.json())
-                      .then((data) => {
-                        if (data.success) {
-                          setInsights(data.insights);
-                        }
-                      })
-                      .catch(console.error)
-                      .finally(() => setLoadingInsights(false));
-                  }}
-                />
-              )}
-
-              {step === 2 && (
-                <Step2Form
-                  sessionId={sessionId}
-                  onBack={() => setStep(1)}
-                  onComplete={() => {
-                    // Show success message or redirect
-                    alert('Onboarding complete! We\'ll be in touch soon.');
-                  }}
-                />
-              )}
-            </div>
-          </div>
-
-          {/* Insights Column */}
-          <div className="lg:col-span-1">
-            <InsightsPanel 
-              insights={insights} 
-              loading={loadingInsights}
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+          {step === 1 && (
+            <Step1Form
+              sessionId={sessionId}
+              initialData={step1Data}
+              onComplete={(data) => {
+                setStep1Data(data);
+                setStep(2);
+              }}
             />
-          </div>
+          )}
+
+          {step === 2 && (
+            <Step2Form
+              sessionId={sessionId}
+              onBack={() => setStep(1)}
+              onComplete={() => {
+                // Redirect to success page with insights data
+                const params = new URLSearchParams({
+                  lat: step1Data.lat.toString(),
+                  lng: step1Data.lng.toString(),
+                  name: step1Data.storeName,
+                  type: step1Data.storeType,
+                });
+                router.push(`/onboarding/success?${params.toString()}`);
+              }}
+            />
+          )}
         </div>
       </div>
     </div>

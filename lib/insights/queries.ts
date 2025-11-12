@@ -47,21 +47,32 @@ export async function getLocalInsights(
   // Get bounding box for 5 mile radius (covers all our queries)
   const bbox = getBoundingBox(lat, lon, 5);
 
-  // Fetch all stores within bounding box (uppercase column names)
-  const { data: stores, error } = await supabase
+  console.log('Search params:', { lat, lon, bbox });
+
+  // Fetch all stores and filter in memory (Supabase JS doesn't handle uppercase columns well)
+  const { data: allStores, error } = await supabase
     .from('nj_stores')
-    .select('*')
-    .gte('STORE_LATITUDE', bbox.minLat)
-    .lte('STORE_LATITUDE', bbox.maxLat)
-    .gte('STORE_LONGITUDE', bbox.minLon)
-    .lte('STORE_LONGITUDE', bbox.maxLon)
-    .not('STORE_LATITUDE', 'is', null)
-    .not('STORE_LONGITUDE', 'is', null);
+    .select('*');
 
   if (error) {
     console.error('Error fetching stores:', error);
     throw error;
   }
+
+  console.log('Total stores fetched:', allStores?.length);
+  console.log('Sample store:', allStores?.[0]);
+
+  // Filter by bounding box in memory
+  const stores = (allStores || []).filter((s: any) => 
+    s.STORE_LATITUDE >= bbox.minLat &&
+    s.STORE_LATITUDE <= bbox.maxLat &&
+    s.STORE_LONGITUDE >= bbox.minLon &&
+    s.STORE_LONGITUDE <= bbox.maxLon &&
+    s.STORE_LATITUDE != null &&
+    s.STORE_LONGITUDE != null
+  );
+
+  console.log('Stores after bbox filter:', stores.length);
 
   // Calculate distances and filter
   const storesWithDistance = (stores || [])
@@ -129,18 +140,18 @@ export async function getLocalInsights(
     localTypeCounts.set(type, (localTypeCounts.get(type) || 0) + 1);
   });
 
-  const { data: allStores } = await supabase
+  const { data: allStoresForTypes } = await supabase
     .from('nj_stores')
     .select('STORE_TYPE');
 
   const stateTypeCounts = new Map<string, number>();
-  (allStores || []).forEach((s) => {
+  (allStoresForTypes || []).forEach((s) => {
     const type = s.STORE_TYPE || 'other';
     stateTypeCounts.set(type, (stateTypeCounts.get(type) || 0) + 1);
   });
 
   const localTotal = within3.length;
-  const stateTotal = allStores?.length || 1;
+  const stateTotal = allStoresForTypes?.length || 1;
 
   const localTypes = Array.from(localTypeCounts.entries())
     .map(([type, count]) => ({

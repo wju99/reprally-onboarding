@@ -93,7 +93,8 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
           id="bestTime"
           value={formData.bestTime}
           onChange={(e) => setFormData({ ...formData, bestTime: e.target.value })}
-          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          style={{ backgroundPosition: 'right 0.75rem center' }}
         >
           <option value="">Select a time...</option>
           {BEST_TIMES.map((time) => (
@@ -106,25 +107,23 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
 
       {/* Preferred Contact Method */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label htmlFor="contactMethod" className="block text-sm font-medium text-gray-700 mb-1">
           Preferred contact method
         </label>
-        <div className="grid grid-cols-2 gap-3">
+        <select
+          id="contactMethod"
+          value={formData.contactMethod}
+          onChange={(e) => setFormData({ ...formData, contactMethod: e.target.value })}
+          className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+          style={{ backgroundPosition: 'right 0.75rem center' }}
+        >
+          <option value="">Select a method...</option>
           {CONTACT_METHODS.map((method) => (
-            <button
-              key={method}
-              type="button"
-              onClick={() => setFormData({ ...formData, contactMethod: method })}
-              className={`px-4 py-3 border-2 rounded-lg font-medium transition-colors ${
-                formData.contactMethod === method
-                  ? 'border-emerald-600 bg-emerald-50 text-emerald-700'
-                  : 'border-gray-200 bg-white text-gray-700 hover:border-gray-300'
-              }`}
-            >
+            <option key={method} value={method}>
               {method}
-            </button>
+            </option>
           ))}
-        </div>
+        </select>
       </div>
 
       {/* Actions */}

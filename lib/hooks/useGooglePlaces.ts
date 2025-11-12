@@ -2,6 +2,14 @@
 
 import { useEffect, useState } from 'react';
 
+// Extend Window interface for Google Maps
+declare global {
+  interface Window {
+    google?: any;
+    initGoogleMaps?: () => void;
+  }
+}
+
 export interface PlaceResult {
   placeId: string;
   formattedAddress: string;
@@ -33,7 +41,6 @@ export function useGooglePlaces() {
     script.async = true;
     script.defer = true;
 
-    // @ts-ignore
     window.initGoogleMaps = () => {
       setIsLoaded(true);
     };
@@ -46,7 +53,7 @@ export function useGooglePlaces() {
 
     return () => {
       // Cleanup
-      delete (window as any).initGoogleMaps;
+      delete window.initGoogleMaps;
     };
   }, []);
 
@@ -65,7 +72,7 @@ export function initAutocomplete(
     return null;
   }
 
-  const autocomplete = new google.maps.places.Autocomplete(input, {
+  const autocomplete = new window.google.maps.places.Autocomplete(input, {
     componentRestrictions: { country: 'us' },
     fields: ['place_id', 'formatted_address', 'geometry'],
     types: ['address'],

@@ -18,7 +18,6 @@ interface Step1FormProps {
     phone: string;
   };
   onComplete: (data: any) => void;
-  onInsightsRequest: (lat: number, lng: number, storeType?: string) => void;
 }
 
 const STORE_TYPES = [
@@ -30,7 +29,7 @@ const STORE_TYPES = [
   'other',
 ];
 
-export function Step1Form({ sessionId, initialData, onComplete, onInsightsRequest }: Step1FormProps) {
+export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps) {
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
@@ -48,19 +47,16 @@ export function Step1Form({ sessionId, initialData, onComplete, onInsightsReques
             lat: place.lat,
             lng: place.lng,
           }));
-
-          // Trigger insights fetch
-          onInsightsRequest(place.lat, place.lng, formData.storeType);
         }
       );
 
       return () => {
         if (autocomplete) {
-          google.maps.event.clearInstanceListeners(autocomplete);
+          window.google.maps.event.clearInstanceListeners(autocomplete);
         }
       };
     }
-  }, [formData.storeType, onInsightsRequest]);
+  }, []);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -172,11 +168,8 @@ export function Step1Form({ sessionId, initialData, onComplete, onInsightsReques
           value={formData.storeType}
           onChange={(e) => {
             setFormData({ ...formData, storeType: e.target.value });
-            if (formData.lat && formData.lng) {
-              onInsightsRequest(formData.lat, formData.lng, e.target.value);
-            }
           }}
-          className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent ${
+          className={`w-full pl-4 pr-12 py-2 border rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 fill=%27none%27 viewBox=%270 0 20 20%27%3E%3Cpath stroke=%27%236b7280%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27 stroke-width=%271.5%27 d=%27m6 8 4 4 4-4%27/%3E%3C/svg%3E')] bg-[length:1.5em_1.5em] bg-[right_0.5rem_center] bg-no-repeat ${
             errors.storeType ? 'border-red-500' : 'border-gray-300'
           }`}
         >
