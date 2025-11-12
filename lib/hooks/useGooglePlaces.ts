@@ -35,25 +35,45 @@ export function useGooglePlaces() {
       return;
     }
 
+    // Check if script is already loading
+    const existingScript = document.querySelector('script[src*="maps.googleapis.com"]');
+    if (existingScript) {
+      // Script is already loading, just wait for it
+      const checkLoaded = setInterval(() => {
+        if (window.google?.maps?.places) {
+          setIsLoaded(true);
+          clearInterval(checkLoaded);
+        }
+      }, 100);
+      
+      return () => clearInterval(checkLoaded);
+    }
+
+    // Define callback BEFORE creating script
+    window.initGoogleMaps = () => {
+      if (window.google?.maps?.places) {
+        setIsLoaded(true);
+      }
+    };
+
     // Load Google Maps script
     const script = document.createElement('script');
     script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initGoogleMaps`;
     script.async = true;
     script.defer = true;
 
-    window.initGoogleMaps = () => {
-      setIsLoaded(true);
-    };
-
     script.onerror = () => {
       setError('Failed to load Google Maps');
+      delete window.initGoogleMaps;
     };
 
     document.head.appendChild(script);
 
     return () => {
       // Cleanup
-      delete window.initGoogleMaps;
+      if (window.initGoogleMaps) {
+        delete window.initGoogleMaps;
+      }
     };
   }, []);
 

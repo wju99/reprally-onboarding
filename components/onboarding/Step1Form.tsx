@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { initAutocomplete, PlaceResult } from '@/lib/hooks/useGooglePlaces';
+import { useGooglePlaces, initAutocomplete, PlaceResult } from '@/lib/hooks/useGooglePlaces';
 import { saveOnboardingDraft } from '@/app/actions/onboarding';
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
+import { usePostHog } from 'posthog-js/react';
 
 interface Step1FormProps {
   sessionId: string;
@@ -32,13 +33,27 @@ const STORE_TYPES = [
 ];
 
 export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps) {
+  const posthog = usePostHog();
+  const { isLoaded: isGoogleLoaded } = useGooglePlaces();
   const [formData, setFormData] = useState(initialData);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const addressInputRef = useRef<HTMLInputElement>(null);
+  const [hasTrackedStart, setHasTrackedStart] = useState(false);
 
+  // Track onboarding start
   useEffect(() => {
-    if (addressInputRef.current && window.google?.maps?.places) {
+    if (!hasTrackedStart) {
+      posthog?.capture('onboarding_step1_viewed', {
+        session_id: sessionId,
+      });
+      setHasTrackedStart(true);
+    }
+  }, [posthog, sessionId, hasTrackedStart]);
+
+  // Initialize Google Places autocomplete when loaded
+  useEffect(() => {
+    if (addressInputRef.current && isGoogleLoaded && window.google?.maps?.places) {
       const autocomplete = initAutocomplete(
         addressInputRef.current,
         (place: PlaceResult) => {
@@ -49,16 +64,22 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
             lat: place.lat,
             lng: place.lng,
           }));
+          
+          // Track address selection
+          posthog?.capture('onboarding_address_selected', {
+            session_id: sessionId,
+            has_place_id: !!place.placeId,
+          });
         }
       );
 
       return () => {
-        if (autocomplete) {
+        if (autocomplete && window.google?.maps?.event) {
           window.google.maps.event.clearInstanceListeners(autocomplete);
         }
       };
     }
-  }, []);
+  }, [isGoogleLoaded, posthog, sessionId]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -120,7 +141,14 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      // Track validation errors
+      posthog?.capture('onboarding_step1_validation_failed', {
+        session_id: sessionId,
+        error_fields: Object.keys(errors),
+      });
+      return;
+    }
 
     setSaving(true);
     try {
@@ -137,9 +165,24 @@ export function Step1Form({ sessionId, initialData, onComplete }: Step1FormProps
         ownerPhone: formData.phone,
       });
 
+      // Track successful step 1 completion
+      posthog?.capture('onboarding_step1_completed', {
+        session_id: sessionId,
+        store_type: formData.storeType,
+        has_phone: !!formData.phone,
+        has_email: !!formData.email,
+      });
+
       onComplete(formData);
     } catch (error) {
       console.error('Error saving draft:', error);
+      
+      // Track save error
+      posthog?.capture('onboarding_step1_save_failed', {
+        session_id: sessionId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      
       alert('Failed to save. Please try again.');
     } finally {
       setSaving(false);

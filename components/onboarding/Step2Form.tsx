@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { usePostHog } from 'posthog-js/react';
 import { completeOnboarding } from '@/app/actions/onboarding';
 
 interface Step2FormProps {
@@ -13,6 +14,7 @@ const CONTACT_METHODS = ['Email', 'Phone', 'Text', 'Any'];
 const BEST_TIMES = ['Morning (8am-12pm)', 'Afternoon (12pm-5pm)', 'Evening (5pm-8pm)', 'Anytime'];
 
 export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
+  const posthog = usePostHog();
   const [formData, setFormData] = useState({
     whatsSelling: '',
     productsExcited: '',
@@ -21,6 +23,17 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [hasTrackedView, setHasTrackedView] = useState(false);
+
+  // Track step 2 view
+  useEffect(() => {
+    if (!hasTrackedView) {
+      posthog?.capture('onboarding_step2_viewed', {
+        session_id: sessionId,
+      });
+      setHasTrackedView(true);
+    }
+  }, [posthog, sessionId, hasTrackedView]);
 
   const validate = () => {
     const newErrors: Record<string, string> = {};
@@ -52,7 +65,14 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validate()) return;
+    if (!validate()) {
+      // Track validation errors
+      posthog?.capture('onboarding_step2_validation_failed', {
+        session_id: sessionId,
+        error_fields: Object.keys(errors),
+      });
+      return;
+    }
 
     setSubmitting(true);
     try {
@@ -64,9 +84,27 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
         preferredContactMethod: formData.contactMethod,
       });
 
+      // Track successful completion
+      posthog?.capture('onboarding_step2_completed', {
+        session_id: sessionId,
+        best_time: formData.bestTime,
+        contact_method: formData.contactMethod,
+      });
+
+      posthog?.capture('onboarding_completed', {
+        session_id: sessionId,
+      });
+
       onComplete();
     } catch (error) {
       console.error('Error completing onboarding:', error);
+      
+      // Track submission error
+      posthog?.capture('onboarding_step2_submit_failed', {
+        session_id: sessionId,
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+      
       alert('Failed to submit. Please try again.');
     } finally {
       setSubmitting(false);
@@ -195,3 +233,4 @@ export function Step2Form({ sessionId, onBack, onComplete }: Step2FormProps) {
   );
 }
 
+  

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { InsightsPanel } from '@/components/onboarding/InsightsPanel';
 import type { LocalInsights } from '@/lib/insights/queries';
 import Link from 'next/link';
+import { usePostHog } from 'posthog-js/react';
 
 // Helper function to get proper ordinal suffix
 function getOrdinalSuffix(num: number): string {
@@ -76,10 +77,12 @@ const placeholderProducts = [
 ];
 
 function SuccessPageContent() {
+  const posthog = usePostHog();
   const searchParams = useSearchParams();
   const [insights, setInsights] = useState<LocalInsights | null>(null);
   const [loading, setLoading] = useState(true);
   const [storeName, setStoreName] = useState('');
+  const [hasTrackedView, setHasTrackedView] = useState(false);
 
   useEffect(() => {
     const lat = searchParams.get('lat');
@@ -88,6 +91,16 @@ function SuccessPageContent() {
     const storeType = searchParams.get('type');
 
     if (name) setStoreName(name);
+
+    // Track success page view
+    if (!hasTrackedView) {
+      posthog?.capture('onboarding_success_page_viewed', {
+        store_name: name,
+        store_type: storeType,
+        has_location: !!(lat && lng),
+      });
+      setHasTrackedView(true);
+    }
 
     if (lat && lng) {
       setLoading(true);
@@ -104,6 +117,13 @@ function SuccessPageContent() {
         .then((data) => {
           if (data.success) {
             setInsights(data.insights);
+            
+            // Track insights loaded
+            posthog?.capture('onboarding_insights_loaded', {
+              store_name: name,
+              nearby_stores: data.insights.nearby.within_5_miles,
+              has_quality_data: !!data.insights.quality.avg_rating_local,
+            });
           }
         })
         .catch(console.error)
@@ -111,24 +131,16 @@ function SuccessPageContent() {
     } else {
       setLoading(false);
     }
-  }, [searchParams]);
+  }, [searchParams, posthog, hasTrackedView]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-white to-emerald-50">
       {/* Header */}
       <header className="bg-white border-b border-gray-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-heading font-bold text-emerald-900">
-              Welcome to RepRally
-            </h1>
-            <a
-              href={process.env.NODE_ENV === 'production' ? 'https://www.reprally.com/' : 'http://localhost:3000'}
-              className="px-6 py-2 bg-emerald-600 text-white font-heading font-medium rounded-lg hover:bg-emerald-700 transition-colors text-sm"
-            >
-              Back to Home
-            </a>
-          </div>
+          <h1 className="text-2xl font-heading font-bold text-emerald-900">
+            Welcome to RepRally
+          </h1>
         </div>
       </header>
 
