@@ -100,8 +100,7 @@ I track 12 different actions users take:
 ### Find the Problems
 
 **If lots of people quit after Step 1:**
-- Add a progress bar ("Step 1 of 2") so they know it's quick
-- Make phone OR email optional (not both required)
+- Make progress bar indicator clearer
 - Add a "Save and finish later" button
 - Make error messages clearer
 
@@ -127,7 +126,7 @@ If phone number errors are common:
 
 If hours field is confusing:
 - Add a dropdown with common options
-- Add a "24/7" quick button
+- Change to a "Open time" and "Close time" time selector
 - Allow "Call for hours"
 
 **Look at how long people spend on each step:**
@@ -152,7 +151,7 @@ If people don't scroll down to see insights:
 If insights take more than 2 seconds to load:
 - Add caching so it loads faster
 - Optimize the database query
-- Show a loading animation so they know it's working
+- Show a loading animation with skeleton loader so they know it's working
 
 ### Test Different Versions
 
@@ -161,19 +160,13 @@ If insights take more than 2 seconds to load:
 - Version B: Everything on one page
 - See which gets more completions
 
-**Test 2: Different headlines**
-- Version A: "See local market insights"
-- Version B: "See what's trending in your area"
-- Version C: "Find out what your competitors are selling"
-- See which gets more clicks
-
-**Test 3: Add trust signals**
+**Test 2: Add trust signals**
 - Version A: No extra text
 - Version B: "Join 500+ NJ store owners"
 - Version C: Show a testimonial
 - See which makes people more likely to complete
 
-**Test 4: Different ways to show insights**
+**Test 3: Different ways to show insights**
 - Version A: Current card layout
 - Version B: Map first, then details
 - Version C: Personalized recommendations
@@ -188,12 +181,12 @@ If insights take more than 2 seconds to load:
 
 **Conversions:**
 - Add a "Schedule a call with our team" button on the success page
-- Show a popup if they try to leave ("Wait! See your insights first")
+- Show a popup if they try to leave without scrolling down ("Wait! See your insights first")
 - Send emails to people who didn't finish
 
 **Performance**
 - Cache the insights data so it loads instantly
-- Speed up the database queries
+- Speed up the store fetch by using PostGIS queries instead of fetching all stores and filtering in memory
 
 ### Long-term Success Metrics
 
