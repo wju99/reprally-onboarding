@@ -212,26 +212,6 @@ npm run dev
 
 # 5. Open http://localhost:3000 in your browser
 
-## Folder Structure
-
-```
-reprally/
-├── app/
-│   ├── actions/              # Functions that save form data
-│   ├── api/insights/         # API that calculates market insights
-│   ├── onboarding/           # The onboarding pages
-│   └── ingest/               # Routes that send data to PostHog
-├── components/
-│   ├── onboarding/           # Step 1 and Step 2 form components
-│   └── providers/            # PostHog setup
-├── lib/
-│   ├── hooks/                # Google Places autocomplete code
-│   ├── insights/             # Code that calculates insights
-│   └── supabase.ts           # Database connection
-└── supabase/
-    └── migrations/           # Database table setup
-```
-
 ## Questions?
 
 Contact: willju88@gmail.com
